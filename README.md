@@ -19,13 +19,24 @@ Installation
 go get -d github.com/cfromknecht/tpec
 cd $GOPATH/src/github.com/cfromknecht/tpec
 dep ensure -v
+go install github.com/cfromknecht/tpec/cmd/tpec
 ```
 
 Running Demo
 ============
+2P-ECDSA signature for a given message:
 ```
-go install github.com/cfromknecht/tpec/cmd/tpec
 tpec -message="hello 2p-ecdsa"
+```
+
+2P-ECDSA signature for a message digest:
+```
+tpec -digest=f25b10e68539ba917b2ae2028326ee5ce46c386746b15ae5585813b08f5aceae
+```
+
+To reveal a secret from party 2 to party1, use the `-secret` flag:
+```
+tpec -message="who are you" -secret=20a5beef
 ```
 
 For help, run `tpec -h`.
