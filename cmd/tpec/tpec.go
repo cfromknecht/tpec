@@ -157,7 +157,7 @@ func main() {
 	switch {
 	case sec != nil:
 		signStart := time.Now()
-		fmt.Printf("SIGN...")
+		fmt.Printf("SCRIPTLESS SIGN...")
 		sig, sec2, err = sk1.ScriptlessSign(dgst[:], sec, sk2)
 		if err != nil {
 			fail("unable to create 2p-ecdsa signature: %v", err)
@@ -183,8 +183,8 @@ func main() {
 
 	valid1 := sig.Verify(dgst[:], sk1.PublicKey)
 	valid2 := sig.Verify(dgst[:], sk2.PublicKey)
-
 	fmt.Printf("Is valid under Q?: %v\n", valid1 && valid2)
+
 	if sec != nil {
 		fmt.Println()
 		fmt.Printf("Recovered secret: %x\n", sec2[:])
