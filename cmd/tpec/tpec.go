@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/NebulousLabs/hdkey/eckey"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/cfromknecht/tpec"
 )
@@ -31,6 +32,9 @@ var (
 
 	digest = flag.String("digest", "",
 		"hexidecimal representation of a hash of a message to sign")
+
+	secret = flag.String("secret", "",
+		"hexidecimal representation of an adaptor secret, must be less than the secp256k1 curve order")
 )
 
 func fail(str string, args ...interface{}) {
@@ -68,6 +72,29 @@ func getDigest() tpec.Uint256 {
 	return dgst
 }
 
+func getSecret(q *big.Int) *eckey.SecretKey {
+	if len(*secret) == 0 {
+		return nil
+	}
+
+	secBytes, err := hex.DecodeString(*secret)
+	if err != nil {
+		fail("unable to decode hex secret: %v", err)
+	}
+
+	secInt := new(big.Int).SetBytes(secBytes)
+	if secInt.Cmp(q) >= 0 {
+		fail("secret must be less than the curve order")
+	}
+
+	sec, err := eckey.NewSecretKeyInt(secInt)
+	if err != nil {
+		fail("cannot create adaptor secret: %v", err)
+	}
+
+	return sec
+}
+
 func main() {
 	flag.Parse()
 
@@ -88,6 +115,12 @@ func main() {
 	dgst := getDigest()
 	fmt.Printf("Digest: %x\n", dgst)
 	fmt.Println()
+
+	sec := getSecret(q)
+	if sec != nil {
+		fmt.Printf("Adaptor secret: %x\n", sec[:])
+		fmt.Println()
+	}
 
 	fmt.Printf("KeyGen parameters:\n")
 	fmt.Printf("  paillier key bits:        %d\n", cfg.NPaillierBits)
@@ -118,14 +151,30 @@ func main() {
 	fmt.Printf("  Q: %x\n", sk1.PublicKey.SerializeCompressed())
 	fmt.Println()
 
-	signStart := time.Now()
-	fmt.Printf("SIGN...")
-	sig, err := sk1.Sign(dgst[:], sk2)
-	if err != nil {
-		fail("unable to create 2p-ecdsa signature: %v", err)
+	var sig *btcec.Signature
+	var sec2 *eckey.SecretKey
+
+	switch {
+	case sec != nil:
+		signStart := time.Now()
+		fmt.Printf("SIGN...")
+		sig, sec2, err = sk1.ScriptlessSign(dgst[:], sec, sk2)
+		if err != nil {
+			fail("unable to create 2p-ecdsa signature: %v", err)
+		}
+		fmt.Printf(" DONE: %v\n", time.Since(signStart))
+		fmt.Println()
+
+	default:
+		signStart := time.Now()
+		fmt.Printf("SIGN...")
+		sig, err = sk1.Sign(dgst[:], sk2)
+		if err != nil {
+			fail("unable to create 2p-ecdsa signature: %v", err)
+		}
+		fmt.Printf(" DONE: %v\n", time.Since(signStart))
+		fmt.Println()
 	}
-	fmt.Printf(" DONE: %v\n", time.Since(signStart))
-	fmt.Println()
 
 	fmt.Printf("Signature:\n")
 	fmt.Printf("  R: %x\n", sig.R)
@@ -136,6 +185,10 @@ func main() {
 	valid2 := sig.Verify(dgst[:], sk2.PublicKey)
 
 	fmt.Printf("Is valid under Q?: %v\n", valid1 && valid2)
+	if sec != nil {
+		fmt.Println()
+		fmt.Printf("Recovered secret: %x\n", sec2[:])
+	}
 
 	os.Exit(0)
 }
