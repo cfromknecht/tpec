@@ -85,13 +85,15 @@ func main() {
 		RangeSecBits:   *rangeSecBits,
 	}
 
+	dgst := getDigest()
+	fmt.Printf("Digest: %x\n", dgst)
+	fmt.Println()
+
 	fmt.Printf("KeyGen parameters:\n")
 	fmt.Printf("  paillier key bits:        %d\n", cfg.NPaillierBits)
 	fmt.Printf("  nth-root proof soundness: %d\n", cfg.NthRootSecBits)
 	fmt.Printf("  range proof soundness:    %d\n", cfg.RangeSecBits)
-
-	dgst := getDigest()
-	fmt.Printf("Digest: %x\n", dgst)
+	fmt.Println()
 
 	var p1 = tpec.NewParty1(&cfg)
 	var p2 = tpec.NewParty2(&cfg)
@@ -103,15 +105,18 @@ func main() {
 		fail("unable to generate 2p-ecdsa key: %v", err)
 	}
 	fmt.Printf(" DONE: %v\n", time.Since(keyGenStart))
+	fmt.Println()
 
 	sk2, err := p2.PrivateKey()
 	if err != nil {
 		fail("unable to generate 2p-ecdsa key: %v", err)
 	}
 
-	fmt.Printf("x1: %x\n", *sk1.X1SK)
-	fmt.Printf("x2: %x\n", *sk2.X2SK)
-	fmt.Printf("Q: %x\n", sk1.PublicKey.SerializeCompressed())
+	fmt.Printf("Keys:\n")
+	fmt.Printf("  x1: %x\n", *sk1.X1SK)
+	fmt.Printf("  x2: %x\n", *sk2.X2SK)
+	fmt.Printf("  Q: %x\n", sk1.PublicKey.SerializeCompressed())
+	fmt.Println()
 
 	signStart := time.Now()
 	fmt.Printf("SIGN...")
@@ -120,10 +125,12 @@ func main() {
 		fail("unable to create 2p-ecdsa signature: %v", err)
 	}
 	fmt.Printf(" DONE: %v\n", time.Since(signStart))
+	fmt.Println()
 
 	fmt.Printf("Signature:\n")
 	fmt.Printf("  R: %x\n", sig.R)
 	fmt.Printf("  S: %x\n", sig.S)
+	fmt.Println()
 
 	valid1 := sig.Verify(dgst[:], sk1.PublicKey)
 	valid2 := sig.Verify(dgst[:], sk2.PublicKey)
