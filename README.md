@@ -53,8 +53,9 @@ go test -v -bench=. -benchtime=10s
 
 |                         | Latency | Memory | Allocations |
 |-------------------------|---------|--------|-------------|
-| BenchmarkKeyGen         | 980ms   | 5.33MB | 14309       |
-| BenchmarkSign           | 28.5ms  | 94.7KB | 740         |
-| BenchmarkScriptlessSign | 29.9    | 115KB  | 1112        |
+| BenchmarkKeyGen         | 599ms   | 6.46MB | 12176       |
+| BenchmarkSign           | 17.8ms  | 122KB  | 717         |
+| BenchmarkScriptlessSign | 18.8ms  | 142KB  | 1074        |
+
 
 Results computed on 2.8 GHz Intel Core i7 16 GB 2133 MHz LPDDR3
