@@ -6,20 +6,15 @@ This package contains:
    - [x] Single Hop
    - [ ] Multi-Hop (coming soon)
    
-   
-Prerequesites
-=============
-```
-go get -u github.com/golang/dep/cmd/dep
-```
 
+Prerequisites
+=============
+`go1.11` or higher
+   
 Installation
 ============
 ```
-go get -d github.com/cfromknecht/tpec
-cd $GOPATH/src/github.com/cfromknecht/tpec
-dep ensure -v
-go install github.com/cfromknecht/tpec/cmd/tpec
+GO111MODULE=on go install github.com/cfromknecht/tpec
 ```
 
 Running Demo
@@ -48,7 +43,7 @@ THIS IS A PROOF OF CONCEPT IMPLEMENTATION BEING USED FOR RESEARCH. USE AT YOUR O
 Benchmarks
 ==========
 ```
-go test -v -bench=. -benchtime=10s
+go test -v -bench=. -benchtime=30s
 ```
 
 |                         | Latency | Memory | Allocations |
